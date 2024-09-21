@@ -11,7 +11,6 @@ class MarriottRoom:
         self.date_from = date_from
         self.date_to = date_to
 
-
 class MarriottHotelAPI:
     @staticmethod
     def search_available_rooms(location, from_date, to_date, adults, children, needed_rooms):
