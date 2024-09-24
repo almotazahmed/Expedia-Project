@@ -10,7 +10,6 @@ class HiltonRoom:
         self.price_per_night = price_per_night
         self.date_from = date_from
         self.date_to = date_to
-
 class HiltonHotelAPI:
     @staticmethod
     def search_rooms(location, from_date, to_date, adults, children, needed_rooms):
