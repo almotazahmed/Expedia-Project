@@ -1,0 +1,615 @@
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\ndef main():\r\n    base_ui()\r\n    \r\n\r\ndef base_ui():\r\n    enter_choice = int(input(\"\"\"System Access: \r\n    1) Login\r\n    2) Sign Up\r\n    Enter Choice From (1 to 2): \"\"\"))\r\n    if enter_choice == 1:\r\n        login_screen()\r\n    elif enter_choice == 2:\r\n        print(\"Sign up is not yet supported, please wait 3>\")\r\n    else: print(\"Invalid Input, try again\")\r\n\r\n\r\n\r\ndef login_screen():\r\n    username = str(input(\"Enter Username: \"))\r\n    password = str(input(\"Enter Password: \"))\r\n    customer_page(username)\r\n\r\n\r\ndef customer_page(username:str):\r\n    choice = int(input(f\"\"\"Welcome {username} | Customer:\r\n    1) View Profile \r\n    2) Make itinerary\r\n    3) List my itineraries\r\n    4) Logout\r\n    Enter your choice (from 1 to 4): \"\"\"))\r\n    if choice == 1: print(\"view profile is not supported yet\")\r\n    elif choice == 2: make_itinerary()\r\n    elif choice == 3: show_itineraries()\r\n    elif choice == 4: exit()\r\n    else: print(\"Invalid Input, try again\")\r\n\r\n\r\ndef make_itinerary():\r\n    print(\"\")\r\n\r\ndef show_itineraries():\r\n    print(\"\")\r\n\r\nmain()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 082de381003411757b17aaaf321a5a716e07eff3)
++++ b/main.py	(date 1727251120573)
+@@ -1,45 +1,163 @@
++from datetime import datetime
++from APIs.turkish_external import TurkishOnlineAPI
++from APIs.aircanada_external import AirCanadaOnlineAPI
++
++def input_date(description_str:str):
++    while True:
++        date_str = input(description_str)
++        try:
++            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
++            print(f"Valid date entered: {date_obj}")
++            return date_obj
++        except ValueError:
++            print("Invalid date format. Please enter in YYYY-MM-DD format.")
++
++
++class UserAccount:
++    def __init__(self, username:str, password:str) :
++        self.username = username
++        self.password = password
++
++    def login(self, username:str, password:str):
++        if username == self.username and password == self.password:
++            return True
++        else:
++            return False
+ 
+-def main():
+-    base_ui()
+-    
++
++class Customer(UserAccount):
++    def __init__(self, username, password):
++        super().__init__(username, password)
++        self.itineraries = []
+ 
++    def view_profile(self):
++        print(f"Hello {self.username}, This is you")
++
++    def add_itinerary(self):
++        itinerary = Itinerary()
++        self.itineraries.append(itinerary)
++        itinerary.create_itinerary()
++
++    def list_itineraries(self):
++        for itinerary in self.itineraries:
++            print(itinerary)
++
++
++class Itinerary:
++    def __init__(self):
++        self.itineraries = []
++
++    def create_itinerary(self):
++        while True:
++            try:
++                choice = int(input(f"""Create you itinerary:
++                        1) Add flight
++                        2) Add Hotel
++                        3) Reserve itinerary
++                        4) Cancel itinerary
++                        Enter your choice (from 1 to 4): """))
++            except ValueError:
++                print("Invalid input, please enter a number (1, 2, 3 or 4).")
++                continue
++
++            if choice == 1:
++                self.add_flight()
++
++
++            #     elif choice == 2:
++            #     customer.add_itinerary()
++            # elif choice == 3:
++            #     customer.list_itineraries()
++            # elif choice == 4:
++            #
++            # else:
++            #     print("Invalid input, please enter a number (1, 2, 3 or 4).")
++
++    def add_flight(self):
++        from_loc = input("Enter departure location: ")
++        datetime_from = input_date("Enter departure date (YYYY-MM-DD): ")
++        to_loc = input("Enter destination: ")
++        datetime_to = input_date("Enter return date (YYYY-MM-DD): ")
++        number_of_infants = input("Enter number of infants: ")
++        number_of_children = input("Enter number of children: ")
++        number_of_adults = input("Enter number of adults: ")
++
++        available_flights = []
++
++        turkish_api = TurkishOnlineAPI()
++        turkish_api.set_from_to_info(datetime_from, from_loc, datetime_to, to_loc)
++        turkish_api.set_passengers_info(number_of_infants, number_of_children, number_of_adults)
++        available_flights.extend(turkish_api.get_available_flights())
++
++        aircanada_api = AirCanadaOnlineAPI()
++        available_flights.extend(aircanada_api.get_flights(datetime_from, from_loc, datetime_to, to_loc, number_of_adults,number_of_children))
++
++        available_flights_list = []
++        for idx, flight in enumerate(available_flights, start=1):
++            available_flights_list.append(
++                f"{idx}) AirCanada: Coat {flight[0]} From: {from_loc} on {flight[1]} To: {to_loc} on {flight[2]} - #Infants: {number_of_infants} - #Children: {number_of_children} - #Adults: {number_of_adults}"
++            )
++
++        # Show the flight list to the user
++        if available_flights_list:
++            print("\nAvailable Flights:")
++            for flight_info in available_flights_list:
++                print(flight_info)
++        else:
++            print("No flights available for the selected dates and locations.")
++
++
++
+ def base_ui():
+-    enter_choice = int(input("""System Access: 
+-    1) Login
+-    2) Sign Up
+-    Enter Choice From (1 to 2): """))
+-    if enter_choice == 1:
+-        login_screen()
+-    elif enter_choice == 2:
+-        print("Sign up is not yet supported, please wait 3>")
+-    else: print("Invalid Input, try again")
+-
++    customer = Customer('user1', '123456')
++
++    while True:
++        try:
++            enter_choice = int(input("""System Access: 
++                1) Login
++                2) Sign Up
++                Enter Choice (1 or 2): """))
++        except ValueError:
++            print("Invalid input, please enter a number (1 or 2).")
++            continue
++
++        if enter_choice == 1:
++            username = input("Enter Username: ")
++            password = input("Enter Password: ")
++            if customer.login(username, password):
++                customer_page(customer)
++                break
++            else:
++                print("Invalid Username or Password. Please try again.")
++        elif enter_choice == 2:
++            print("Sign up is not yet supported, please wait.")
++        else:
++            print("Invalid Input, please enter either 1 or 2.")
+ 
+ 
+-def login_screen():
+-    username = str(input("Enter Username: "))
+-    password = str(input("Enter Password: "))
+-    customer_page(username)
+-
+-
+-def customer_page(username:str):
+-    choice = int(input(f"""Welcome {username} | Customer:
+-    1) View Profile 
+-    2) Make itinerary
+-    3) List my itineraries
+-    4) Logout
+-    Enter your choice (from 1 to 4): """))
+-    if choice == 1: print("view profile is not supported yet")
+-    elif choice == 2: make_itinerary()
+-    elif choice == 3: show_itineraries()
+-    elif choice == 4: exit()
+-    else: print("Invalid Input, try again")
+-
++def customer_page(customer):
++    while True:
++        try:
++            choice = int(input(f"""Welcome {customer.username} | Customer:
++                    1) View Profile 
++                    2) Make itinerary
++                    3) List my itineraries
++                    4) Logout
++                    Enter your choice (from 1 to 4): """))
++        except ValueError:
++            print("Invalid input, please enter a number (1, 2, 3 or 4).")
++            continue
+ 
+-def make_itinerary():
+-    print("")
++        if choice == 1:
++            customer.view_profile()
++        elif choice == 2:
++            customer.add_itinerary()
++        elif choice == 3:
++            customer.list_itineraries()
++        elif choice == 4:
++            exit()
++        else:
++            print("Invalid input, please enter a number (1, 2, 3 or 4).")
+ 
+-def show_itineraries():
+-    print("")
+-
+-main()
++if __name__ == "__main__":
++    base_ui()
+\ No newline at end of file
+Index: services/aircanada_external.py
+===================================================================
+diff --git a/services/aircanada_external.py b/services/aircanada_external.py
+deleted file mode 100644
+--- a/services/aircanada_external.py	(revision 082de381003411757b17aaaf321a5a716e07eff3)
++++ /dev/null	(revision 082de381003411757b17aaaf321a5a716e07eff3)
+@@ -1,28 +0,0 @@
+-
+-class AirCanadaCustomerInfo:
+-    def __init__(self, name, passport, birthdate):
+-        pass
+-
+-class AirCanadaFlight:
+-    def __init__(self, price, date_time_from, date_time_to):
+-        self.price = price  # price for total of adults & children
+-        self.date_time_from = date_time_from
+-        self.date_time_to = date_time_to
+-
+-class AirCanadaOnlineAPI:
+-    @staticmethod
+-    def get_flights(from_loc, from_date, to_loc, to_date, adults, children):
+-        flights = []
+-        flights.append(AirCanadaFlight(200, "25-01-2022", "10-02-2022"))
+-        flights.append(AirCanadaFlight(250, "29-01-2022", "10-02-2022"))
+-        return flights
+-
+-    @staticmethod
+-    def reserve_flight(flight: AirCanadaFlight, customers_info: list):
+-        confirmation_id = '1234AirCanadaXXr34'  # None for failure
+-        return confirmation_id
+-        #return None     # Try None
+-
+-    @staticmethod
+-    def cancel_flight(confirmation_id):
+-        return True
+Index: services/turkish_external.py
+===================================================================
+diff --git a/services/turkish_external.py b/services/turkish_external.py
+deleted file mode 100644
+--- a/services/turkish_external.py	(revision 082de381003411757b17aaaf321a5a716e07eff3)
++++ /dev/null	(revision 082de381003411757b17aaaf321a5a716e07eff3)
+@@ -1,35 +0,0 @@
+-
+-class TurkishCustomerInfo:
+-    def __init__(self, passport, name, birthdate):
+-        pass
+-
+-
+-class TurkishFlight:
+-    def __init__(self, cost, datetime_from, datetime_to):
+-        self.cost = cost
+-        self.datetime_from = datetime_from
+-        self.datetime_to = datetime_to
+-
+-
+-class TurkishOnlineAPI:
+-    def set_from_to_info(self, datetime_from, from_loc, datetime_to, to_loc):
+-        pass
+-
+-    def set_passengers_info(self, infants, childern, adults):
+-        pass
+-
+-    def get_available_flights(self):
+-        flights = []
+-        flights.append(TurkishFlight(400, "10-01-2022", "10-03-2022"))
+-        flights.append(TurkishFlight(431, "18-01-2022", "27-03-2022"))
+-        return flights
+-
+-    @staticmethod
+-    def reserve_flight(customers_info: list, flight: TurkishFlight):
+-        confirmation_id = '1234TTTTT'  # None for failure
+-        return confirmation_id
+-        # return None     # Try None
+-
+-    @staticmethod
+-    def cancel_flight(confirmation_id):
+-        return True
+Index: services/paypal_external.py
+===================================================================
+diff --git a/services/paypal_external.py b/services/paypal_external.py
+deleted file mode 100644
+--- a/services/paypal_external.py	(revision 082de381003411757b17aaaf321a5a716e07eff3)
++++ /dev/null	(revision 082de381003411757b17aaaf321a5a716e07eff3)
+@@ -1,26 +0,0 @@
+-#gagah
+-# In practice, you may download their code here to contact remotely Paypal
+-# This is external code. It knows NOTHING about ur project.
+-# We use it. It doesn't use our code base
+-
+-class PayPalCreditCard:
+-    def __init__(self, name = None, address= None,
+-          id= None, expire_date= None, ccv= None):
+-        self.name = name
+-        self.address = address
+-        self.id = id
+-        self.expire_date = expire_date
+-        self.ccv = ccv
+-
+-class PayPalOnlinePaymentAPI:
+-    def __init__(self, card_info : PayPalCreditCard = None):
+-        self.card_info = None
+-
+-    def pay_money(self, money):
+-        print(f'PayPalOnlinePaymentAPI pay_money')
+-        return True, '12345PayPal'    # Call PayPal backend
+-        # Switch it to False to see failulres and their handling
+-
+-    def cancel_money(self, transaction_id):
+-        print(f'PayPalOnlinePaymentAPI cancel_money')
+-        return True
+\ No newline at end of file
+Index: services/marriott_external.py
+===================================================================
+diff --git a/services/marriott_external.py b/services/marriott_external.py
+deleted file mode 100644
+--- a/services/marriott_external.py	(revision 082de381003411757b17aaaf321a5a716e07eff3)
++++ /dev/null	(revision 082de381003411757b17aaaf321a5a716e07eff3)
+@@ -1,29 +0,0 @@
+-
+-class MarriottCustomerInfo:
+-    def __init__(self, name, passport, birthdate):
+-        pass
+-
+-class MarriottRoom:
+-    def __init__(self, room_type, available, price_per_night, date_from, date_to):
+-        self.room_type = room_type
+-        self.available = available
+-        self.price_per_night = price_per_night
+-        self.date_from = date_from
+-        self.date_to = date_to
+-
+-class MarriottHotelAPI:
+-    @staticmethod
+-    def search_available_rooms(location, from_date, to_date, adults, children, needed_rooms):
+-        rooms = []
+-        rooms.append(MarriottRoom("City View", 5, 444.0, "24-01-2022", "12-02-2022"))
+-        rooms.append(MarriottRoom("Deluxe View", 3, 350.0, "28-01-2022", "190-02-2022"))
+-        return rooms
+-
+-    @staticmethod
+-    def do_room_reservation(room: MarriottRoom, customers_info: list):
+-        confirmation_id = '45544MarriottHotelAPI4545'  # None for failure
+-        return confirmation_id
+-
+-    @staticmethod
+-    def cancel_room(confirmation_id):
+-        return True
+Index: useraccount.py
+===================================================================
+diff --git a/useraccount.py b/useraccount.py
+deleted file mode 100644
+--- a/useraccount.py	(revision 082de381003411757b17aaaf321a5a716e07eff3)
++++ /dev/null	(revision 082de381003411757b17aaaf321a5a716e07eff3)
+@@ -1,4 +0,0 @@
+-class UserAccount:
+-    def __init__(self, name:str, password:str) :
+-        self.name = name
+-        self.password = password
+\ No newline at end of file
+Index: services/hilton_external.py
+===================================================================
+diff --git a/services/hilton_external.py b/services/hilton_external.py
+deleted file mode 100644
+--- a/services/hilton_external.py	(revision 082de381003411757b17aaaf321a5a716e07eff3)
++++ /dev/null	(revision 082de381003411757b17aaaf321a5a716e07eff3)
+@@ -1,30 +0,0 @@
+-
+-class HiltonCustomerInfo:
+-    def __init__(self, name, passport, birthdate):
+-        pass
+-
+-class HiltonRoom:
+-    def __init__(self, room_type, available, price_per_night, date_from, date_to):
+-        self.room_type = room_type
+-        self.available = available
+-        self.price_per_night = price_per_night
+-        self.date_from = date_from
+-        self.date_to = date_to
+-
+-class HiltonHotelAPI:
+-    @staticmethod
+-    def search_rooms(location, from_date, to_date, adults, children, needed_rooms):
+-        rooms = []
+-        rooms.append(HiltonRoom("Interior View", 6, 200.0, "29-01-2022", "10-02-2022"))
+-        rooms.append(HiltonRoom("City View", 3, 300.0, "29-01-2022", "10-02-2022"))
+-        rooms.append(HiltonRoom("Deluxe View", 8, 500.0, "29-01-2022", "10-02-2022"))
+-        return rooms
+-
+-    @staticmethod
+-    def reserve_room(room: HiltonRoom, customers_info: list):
+-        confirmation_id = '45544HiltonHotelAPI4545'  # None for failure
+-        return confirmation_id
+-
+-    @staticmethod
+-    def cancel_room(confirmation_id):
+-        return True
+Index: services/stripe_external.py
+===================================================================
+diff --git a/services/stripe_external.py b/services/stripe_external.py
+deleted file mode 100644
+--- a/services/stripe_external.py	(revision 082de381003411757b17aaaf321a5a716e07eff3)
++++ /dev/null	(revision 082de381003411757b17aaaf321a5a716e07eff3)
+@@ -1,24 +0,0 @@
+-
+-
+-class StripeUserInfo:
+-    def __init__(self, name = None, address = None):
+-        self.name = name
+-        self.address = address
+-
+-
+-class StripeCardInfo:
+-    def __init__(self, id = None, expire_date = None):
+-        self.id = id
+-        self.expire_date = expire_date
+-
+-
+-class StripePaymentAPI:
+-    @staticmethod
+-    def withdraw_money(user_info, card_info, money):
+-        print(f'StripePaymentAPI request')
+-        return True, '12345Stripe'           # Call Stripe backend
+-
+-
+-    @staticmethod
+-    def cancel_money(transaction_id):
+-        return True
+\ No newline at end of file
+Index: main2.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main2.py b/main2.py
+new file mode 100644
+--- /dev/null	(date 1727251360340)
++++ b/main2.py	(date 1727251360340)
+@@ -0,0 +1,163 @@
++from datetime import datetime
++from APIs.turkish_external import TurkishOnlineAPI
++from APIs.aircanada_external import AirCanadaOnlineAPI
++
++def input_date(description_str:str):
++    while True:
++        date_str = input(description_str)
++        try:
++            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
++            print(f"Valid date entered: {date_obj}")
++            return date_obj
++        except ValueError:
++            print("Invalid date format. Please enter in YYYY-MM-DD format.")
++
++
++class UserAccount:
++    def __init__(self, username:str, password:str) :
++        self.username = username
++        self.password = password
++
++    def login(self, username:str, password:str):
++        if username == self.username and password == self.password:
++            return True
++        else:
++            return False
++
++
++class Customer(UserAccount):
++    def __init__(self, username, password):
++        super().__init__(username, password)
++        self.itineraries = []
++
++    def view_profile(self):
++        print(f"Hello {self.username}, This is you")
++
++    def add_itinerary(self):
++        itinerary = Itinerary()
++        self.itineraries.append(itinerary)
++        itinerary.create_itinerary()
++
++    def list_itineraries(self):
++        for itinerary in self.itineraries:
++            print(itinerary)
++
++
++class Itinerary:
++    def __init__(self):
++        self.itineraries = []
++
++    def create_itinerary(self):
++        while True:
++            try:
++                choice = int(input(f"""Create you itinerary:
++                        1) Add flight
++                        2) Add Hotel
++                        3) Reserve itinerary
++                        4) Cancel itinerary
++                        Enter your choice (from 1 to 4): """))
++            except ValueError:
++                print("Invalid input, please enter a number (1, 2, 3 or 4).")
++                continue
++
++            if choice == 1:
++                self.add_flight()
++
++
++            #     elif choice == 2:
++            #     customer.add_itinerary()
++            # elif choice == 3:
++            #     customer.list_itineraries()
++            # elif choice == 4:
++            #
++            # else:
++            #     print("Invalid input, please enter a number (1, 2, 3 or 4).")
++
++    def add_flight(self):
++        from_loc = input("Enter departure location: ")
++        datetime_from = input_date("Enter departure date (YYYY-MM-DD): ")
++        to_loc = input("Enter destination: ")
++        datetime_to = input_date("Enter return date (YYYY-MM-DD): ")
++        number_of_infants = input("Enter number of infants: ")
++        number_of_children = input("Enter number of children: ")
++        number_of_adults = input("Enter number of adults: ")
++
++        available_flights = []
++
++        turkish_api = TurkishOnlineAPI()
++        turkish_api.set_from_to_info(datetime_from, from_loc, datetime_to, to_loc)
++        turkish_api.set_passengers_info(number_of_infants, number_of_children, number_of_adults)
++        available_flights.extend(turkish_api.get_available_flights())
++
++        aircanada_api = AirCanadaOnlineAPI()
++        available_flights.extend(aircanada_api.get_flights(datetime_from, from_loc, datetime_to, to_loc, number_of_adults,number_of_children))
++
++        available_flights_list = []
++        for idx, flight in enumerate(available_flights, start=1):
++            available_flights_list.append(
++                f"{idx}) AirCanada: Coat {flight[0]} From: {from_loc} on {flight[1]} To: {to_loc} on {flight[2]} - #Infants: {number_of_infants} - #Children: {number_of_children} - #Adults: {number_of_adults}"
++            )
++
++        # Show the flight list to the user
++        if available_flights_list:
++            print("\nAvailable Flights:")
++            for flight_info in available_flights_list:
++                print(flight_info)
++        else:
++            print("No flights available for the selected dates and locations.")
++
++
++
++def base_ui():
++    customer = Customer('user1', '123456')
++
++    while True:
++        try:
++            enter_choice = int(input("""System Access: 
++                1) Login
++                2) Sign Up
++                Enter Choice (1 or 2): """))
++        except ValueError:
++            print("Invalid input, please enter a number (1 or 2).")
++            continue
++
++        if enter_choice == 1:
++            username = input("Enter Username: ")
++            password = input("Enter Password: ")
++            if customer.login(username, password):
++                customer_page(customer)
++                break
++            else:
++                print("Invalid Username or Password. Please try again.")
++        elif enter_choice == 2:
++            print("Sign up is not yet supported, please wait.")
++        else:
++            print("Invalid Input, please enter either 1 or 2.")
++
++
++def customer_page(customer):
++    while True:
++        try:
++            choice = int(input(f"""Welcome {customer.username} | Customer:
++                    1) View Profile 
++                    2) Make itinerary
++                    3) List my itineraries
++                    4) Logout
++                    Enter your choice (from 1 to 4): """))
++        except ValueError:
++            print("Invalid input, please enter a number (1, 2, 3 or 4).")
++            continue
++
++        if choice == 1:
++            customer.view_profile()
++        elif choice == 2:
++            customer.add_itinerary()
++        elif choice == 3:
++            customer.list_itineraries()
++        elif choice == 4:
++            exit()
++        else:
++            print("Invalid input, please enter a number (1, 2, 3 or 4).")
++
++if __name__ == "__main__":
++    base_ui()
+\ No newline at end of file
