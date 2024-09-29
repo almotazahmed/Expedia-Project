@@ -1,5 +1,5 @@
-#gagah
-# In practice, you may download their code here to contact remotely PayPal
+
+# In practice, you may download their code here to contact remotely Paypal
 # This is external code. It knows NOTHING about ur project.
 # We use it. It doesn't use our code base
 
@@ -12,13 +12,14 @@ class PayPalCreditCard:
         self.expire_date = expire_date
         self.ccv = ccv
 
+
 class PayPalOnlinePaymentAPI:
     def __init__(self, card_info : PayPalCreditCard = None):
         self.card_info = None
 
     def pay_money(self, money):
         print(f'PayPalOnlinePaymentAPI pay_money')
-        return True, '12345PayPal'    # Call PayPal backend
+        return False, '12345PayPal'    # Call PayPal backend
         # Switch it to False to see failures and their handling
 
     def cancel_money(self, transaction_id):

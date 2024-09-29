@@ -11,6 +11,7 @@ class MarriottRoom:
         self.date_from = date_from
         self.date_to = date_to
 
+
 class MarriottHotelAPI:
     @staticmethod
     def search_available_rooms(location, from_date, to_date, adults, children, needed_rooms):
@@ -21,7 +22,7 @@ class MarriottHotelAPI:
 
     @staticmethod
     def do_room_reservation(room: MarriottRoom, customers_info: list):
-        confirmation_id = '45544MarriottHotelAPI4545'  # None for failure
+        confirmation_id = '45544MarriottHotelAPI4545'
         return confirmation_id
 
     @staticmethod

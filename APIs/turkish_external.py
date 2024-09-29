@@ -3,6 +3,7 @@ class TurkishCustomerInfo:
     def __init__(self, passport, name, birthdate):
         pass
 
+
 class TurkishFlight:
     def __init__(self, cost, datetime_from, datetime_to):
         self.cost = cost
